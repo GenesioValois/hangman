@@ -63,25 +63,50 @@ defmodule HangmanImplGameTest do
     assert tally.game_state == :bad_guess
   end
 
-  # hello
-  test "can handle a sequence of move" do
+  test "can handle a sequence of moves" do
     [
       # guess, state, turns_left, letters, used
-      [ "a", :bad_guess, 6, [ "_", "_", "_", "_", "_"], ["a"]] ]
-      [ "a", :bad_guess, 6, [ "_", "_", "_", "_", "_"], ["a"]] ]
-      [ "e", :good_guess, 6, [ "_", "e", "_", "_", "_"], ["a", "e"]] ]
-      [ "x", :bad_guess, 5, [ "_", "e", "_", "_", "_"], ["a", "e", "x"]] ]
+      ["a", :bad_guess, 6, ["_", "_", "_", "_", "_"], ["a"]],
+      ["a", :already_used, 6, ["_", "_", "_", "_", "_"], ["a"]],
+      ["e", :good_guess, 6, ["_", "e", "_", "_", "_"], ["a", "e"]],
+      ["x", :bad_guess, 5, ["_", "e", "_", "_", "_"], ["a", "e", "x"]]
+    ]
+    |> test_sequence_of_moves()
+  end
+
+  test "can handle a winning game" do
+    [
+      ["a", :bad_guess, 6, ["_", "_", "_", "_", "_"], ["a"]],
+      ["l", :good_guess, 6, ["_", "_", "l", "l", "_"], ["a", "l"]],
+      ["e", :good_guess, 6, ["_", "e", "l", "l", "_"], ["a", "e", "l"]],
+      ["i", :bad_guess, 5, ["_", "e", "l", "l", "_"], ["a", "e", "i", "l"]],
+      ["h", :good_guess, 5, ["h", "e", "l", "l", "_"], ["a", "e", "h", "i", "l"]],
+      ["o", :won, 5, ["h", "e", "l", "l", "o"], ["a", "e", "h", "i", "l", "o"]]
+    ]
+    |> test_sequence_of_moves()
+  end
+
+  test "can handle a losing game" do
+    [
+      ["a", :bad_guess, 6, ["_", "_", "_", "_", "_"], ["a"]],
+      ["b", :bad_guess, 5, ["_", "_", "_", "_", "_"], ["a", "b"]],
+      ["c", :bad_guess, 4, ["_", "_", "_", "_", "_"], ["a", "b", "c"]],
+      ["d", :bad_guess, 3, ["_", "_", "_", "_", "_"], ["a", "b", "c", "d"]],
+      ["f", :bad_guess, 2, ["_", "_", "_", "_", "_"], ["a", "b", "c", "d", "f"]],
+      ["g", :bad_guess, 1, ["_", "_", "_", "_", "_"], ["a", "b", "c", "d", "f", "g"]],
+      ["i", :lost, 0, ["_", "_", "_", "_", "_"], ["a", "b", "c", "d", "f", "g", "i"]]
     ]
     |> test_sequence_of_moves()
   end
 
   def test_sequence_of_moves(script) do
     game = Game.new_game("hello")
+
     Enum.reduce(script, game, &check_on_move/2)
   end
 
-  defp check_on_move([ guess, state, turns, letters, used], game) do
-    {game, tally } = Game.make_move(game, guess)
+  defp check_on_move([guess, state, turns, letters, used], game) do
+    {game, tally} = Game.make_move(game, guess)
 
     assert tally.game_state == state
     assert tally.turns_left == turns

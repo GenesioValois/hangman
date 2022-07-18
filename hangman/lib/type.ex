@@ -4,6 +4,6 @@ defmodule Hangman.Type do
           turns_lef: integer,
           game_state: state,
           letters: list(String.t()),
-          used: list(String.t())
+          used: MapSet.t()
         }
 end
